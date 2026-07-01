@@ -29,11 +29,10 @@ class SellerPage:
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(expand=True, fill='both', padx=20, pady=10)
 
-        # Αναζήτηση & Αγορά/Δανεισμός (UC001, UC007, UC009)
+        # Αναζήτηση
         self.tab_search = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_search, text="Αναζήτηση & Λειτουργίες (UC001/007/009)")
-        from pages.search import SearchView
-        self.search_view = SearchView(self.tab_search)
+        self.notebook.add(self.tab_search, text="Αναζήτηση")
+        self.setup_search_tab()
 
         # Διαχείριση Επιστροφών (UC003)
         self.tab_returns = ttk.Frame(self.notebook)
@@ -47,7 +46,67 @@ class SellerPage:
         self.logout_button = tk.Button(self.root, text="Αποσύνδεση", font=("Helvetica", 10, "bold"), 
                                        bg="#d9534f", fg="white", width=20, command=self.on_logout)
         self.logout_button.pack(pady=10)
- 
+
+    def setup_search_tab(self):
+        top_frame = tk.Frame(self.tab_search, pady=15)
+        top_frame.pack(fill="x")
+
+        tk.Label(top_frame, text="Όνομα ή Barcode:").pack(side="left", padx=10)
+        self.search_entry = tk.Entry(top_frame, width=40)
+        self.search_entry.pack(side="left", padx=10)
+        tk.Button(top_frame, text="Αναζήτηση", bg="#5bc0de", command=self.perform_search).pack(side="left", padx=10)
+
+        columns = ("barcode", "title", "author", "price", "stock")
+        self.search_tree = ttk.Treeview(self.tab_search, columns=columns, show="headings", height=15)
+        self.search_tree.heading("barcode", text="Barcode")
+        self.search_tree.heading("title", text="Τίτλος")
+        self.search_tree.heading("author", text="Συγγραφέας")
+        self.search_tree.heading("price", text="Τιμή (€)")
+        self.search_tree.heading("stock", text="Απόθεμα")
+        
+        self.search_tree.column("barcode", width=100)
+        self.search_tree.column("title", width=250)
+        self.search_tree.column("author", width=200)
+        self.search_tree.column("price", width=80)
+        self.search_tree.column("stock", width=80)
+        
+        self.search_tree.pack(padx=15, pady=10, expand=True, fill="both")
+
+    def perform_search(self):
+        query = self.search_entry.get().strip().lower()
+        
+        for item in self.search_tree.get_children():
+            self.search_tree.delete(item)
+            
+        try:
+            response = supabase.table("books").select("*").execute()
+            books = response.data
+            
+            if not books:
+                messagebox.showinfo("Αναζήτηση", "Δεν υπάρχουν βιβλία στη βάση.")
+                return
+                
+            found = False
+            for book in books:
+                title = str(book.get("title", "")).lower()
+                barcode = str(book.get("barcode", "")).lower()
+                
+                if not query or query in title or query == barcode:
+                    self.search_tree.insert("", tk.END, values=(
+                        book.get("barcode"),
+                        book.get("title"),
+                        book.get("author"),
+                        f"{book.get('price', 0):.2f}",
+                        book.get("stock", 0)
+                    ))
+                    found = True
+                    
+            if not found:
+                messagebox.showinfo("Αναζήτηση", "Δεν βρέθηκαν βιβλία με αυτά τα στοιχεία.")
+                
+        except Exception as e:
+            messagebox.showerror("Σφάλμα", f"Αποτυχία αναζήτησης:\n{e}")
+
     def setup_sales_tab(self):
         top_frame = tk.Frame(self.tab_sales, pady=15)
         top_frame.pack(fill="x")

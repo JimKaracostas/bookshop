@@ -1,5 +1,11 @@
 import unittest
+import sys
 from unittest.mock import patch, MagicMock
+
+# Mock the supabase module entirely before importing StaffModel
+# so that the tests can run even if the 'supabase' package is not installed.
+sys.modules['supabase'] = MagicMock()
+
 from models.staff_model import StaffModel
 
 class TestStaffModel(unittest.TestCase):
