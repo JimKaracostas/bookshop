@@ -2,8 +2,6 @@ import unittest
 import sys
 from unittest.mock import patch, MagicMock
 
-# Mock the supabase module entirely before importing StaffModel
-# so that the tests can run even if the 'supabase' package is not installed.
 sys.modules['supabase'] = MagicMock()
 
 from models.staff_model import StaffModel
@@ -12,7 +10,6 @@ class TestStaffModel(unittest.TestCase):
 
     @patch('models.staff_model.supabase')
     def test_check_username_exists(self, mock_supabase):
-        # Mocking supabase.table("users").select("id").eq("username", username).execute()
         mock_response = MagicMock()
         mock_response.data = [{'id': 1}]
         
@@ -28,7 +25,6 @@ class TestStaffModel(unittest.TestCase):
         result = StaffModel.check_username_exists("testuser")
         self.assertTrue(result)
         
-        # Test not found
         mock_response.data = []
         result2 = StaffModel.check_username_exists("unknown")
         self.assertFalse(result2)

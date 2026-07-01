@@ -10,11 +10,9 @@ class TestBookModel(unittest.TestCase):
         self.test_dir = tempfile.TemporaryDirectory()
         self.test_file = os.path.join(self.test_dir.name, 'test_books.json')
         
-        # Patch the file path
         self.patcher = patch('models.book_model.BOOKS_FILE', self.test_file)
         self.patcher.start()
         
-        # Initialize file
         with open(self.test_file, 'w', encoding='utf-8') as f:
             json.dump([], f)
             
@@ -30,7 +28,6 @@ class TestBookModel(unittest.TestCase):
         self.assertEqual(result['book']['title'], "Test Book")
         self.assertEqual(result['book']['barcode'], "123456")
         
-        # Test duplicate barcode
         result2 = self.model.add_book("123456", "Another Book", "Author", "Category", 10.0, 5)
         self.assertFalse(result2['success'])
         self.assertEqual(result2['message'], "Duplicate barcode")
@@ -39,17 +36,14 @@ class TestBookModel(unittest.TestCase):
         self.model.add_book("111", "Book A", "Author A", "Cat A", 10.0, 5)
         self.model.add_book("222", "Book B", "Author B", "Cat B", 20.0, 2)
         
-        # Search by term
         results = self.model.search_books("Book A")
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['title'], "Book A")
         
-        # Search by barcode
         results_barcode = self.model.search_books("222", by_barcode=True)
         self.assertEqual(len(results_barcode), 1)
         self.assertEqual(results_barcode[0]['barcode'], "222")
         
-        # Empty search
         all_books = self.model.search_books()
         self.assertEqual(len(all_books), 2)
 
@@ -61,8 +55,7 @@ class TestBookModel(unittest.TestCase):
         self.assertTrue(update_result['success'])
         self.assertEqual(update_result['book']['price'], 12.5)
         self.assertEqual(update_result['book']['stock'], 8)
-        
-        # Test update non-existent book
+         
         fake_update = self.model.update_book(999, 10.0, 10)
         self.assertFalse(fake_update['success'])
 
