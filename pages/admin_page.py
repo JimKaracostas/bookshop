@@ -1,7 +1,6 @@
 # pages/admin_page.py
 
 import tkinter as tk
-from tkinter import messagebox
 
 class AdminPage:
     def __init__(self, root, current_user, callbacks):
@@ -30,20 +29,8 @@ class AdminPage:
                                    command=self.callbacks.get('show_staff'))
         self.btn_staff.pack(pady=10)
         
-        self.btn_bookpass = tk.Button(self.frame, text="Διαχείριση Book Pass (UC006)", 
-                                      font=("Helvetica", 12), width=35, height=2,
-                                      command=self.show_bookpass_management)
-        self.btn_bookpass.pack(pady=10)
-        
         self.btn_logout = tk.Button(self.frame, text="Αποσύνδεση", 
                                     font=("Helvetica", 12, "bold"), width=35, height=2,
                                     bg="#d9534f", fg="white",
                                     command=self.callbacks.get('logout'))
         self.btn_logout.pack(pady=20)
-
-    def show_bookpass_management(self):
-        # Εδώ ενσωματώνουμε τη λογική από το codes/book_pass.py
-        # Δημιουργούμε ένα νέο παράθυρο (Toplevel) για το Book Pass Management
-        top = tk.Toplevel(self.root)
-        from codes.book_pass import BookPassManagementPage
-        BookPassManagementPage(top)

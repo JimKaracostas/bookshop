@@ -30,8 +30,8 @@ class LoginView(tk.Frame):
 
         self.role_label = tk.Label(self.frame, text="Ρόλος:", font=("Helvetica", 10))
         self.role_label.grid(row=3, column=0, sticky="e", pady=5)
-        self.role_var = tk.StringVar(value="Πωλητής")
-        self.role_menu = tk.OptionMenu(self.frame, self.role_var, "Πωλητής", "Διαχειριστής", "Πελάτης")
+        self.role_var = tk.StringVar(value="Διαχειριστής")
+        self.role_menu = tk.OptionMenu(self.frame, self.role_var, "Διαχειριστής", "Πελάτης")
         self.role_menu.grid(row=3, column=1, pady=5, padx=5, sticky="w")
 
         self.login_button = tk.Button(self.frame, text="Σύνδεση", width=15, command=self.on_login)

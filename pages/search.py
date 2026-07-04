@@ -64,13 +64,6 @@ class SearchView:
             command=self.borrow_book
         ).pack(side="left", padx=5)
         
-        tk.Button(
-            action_frame,
-            text="Χρήση Book Pass",
-            width=15,
-            command=self.use_bookpass
-        ).pack(side="left", padx=5)
-
         if self.back_callback:
             tk.Button(
                 self.frame,
@@ -113,5 +106,3 @@ class SearchView:
         book = self.book_list.get(selected)
         messagebox.showinfo("Δανεισμός", f"Δανείστηκες το βιβλίο: {book}")
 
-    def use_bookpass(self):
-        messagebox.showinfo("Book Pass", "Το Book Pass χρησιμοποιήθηκε επιτυχώς.")
