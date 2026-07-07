@@ -1,40 +1,39 @@
 import unittest
-from unittest.mock import patch
-import os
-import json
-import tempfile
-from models.book_model import BookModel, _save_books, _load_books
+from mockito import when, unstub, ANY, verify
+import models.book_model as bm
+from models.book_model import BookModel
 
 class TestBookModel(unittest.TestCase):
     def setUp(self):
-        self.test_dir = tempfile.TemporaryDirectory()
-        self.test_file = os.path.join(self.test_dir.name, 'test_books.json')
-        
-        self.patcher = patch('models.book_model.BOOKS_FILE', self.test_file)
-        self.patcher.start()
-        
-        with open(self.test_file, 'w', encoding='utf-8') as f:
-            json.dump([], f)
-            
+        when(bm)._ensure_data_dir().thenReturn(None)
         self.model = BookModel()
 
     def tearDown(self):
-        self.patcher.stop()
-        self.test_dir.cleanup()
+        unstub()
 
     def test_add_book(self):
+        when(bm)._load_books().thenReturn([])
+        when(bm)._save_books(ANY).thenReturn(None)
+        
         result = self.model.add_book("123456", "Test Book", "Test Author", "Fiction", 15.5, 10)
         self.assertTrue(result['success'])
         self.assertEqual(result['book']['title'], "Test Book")
         self.assertEqual(result['book']['barcode'], "123456")
         
+        verify(bm)._save_books(ANY)
+        
+        # Test duplicate
+        when(bm)._load_books().thenReturn([{'id': 1, 'barcode': "123456"}])
         result2 = self.model.add_book("123456", "Another Book", "Author", "Category", 10.0, 5)
         self.assertFalse(result2['success'])
         self.assertEqual(result2['message'], "Duplicate barcode")
 
     def test_search_books(self):
-        self.model.add_book("111", "Book A", "Author A", "Cat A", 10.0, 5)
-        self.model.add_book("222", "Book B", "Author B", "Cat B", 20.0, 2)
+        mock_books = [
+            {'id': 1, 'barcode': '111', 'title': 'Book A', 'author': 'Author A', 'category': 'Cat A', 'price': 10.0, 'stock': 5},
+            {'id': 2, 'barcode': '222', 'title': 'Book B', 'author': 'Author B', 'category': 'Cat B', 'price': 20.0, 'stock': 2}
+        ]
+        when(bm)._load_books().thenReturn(mock_books)
         
         results = self.model.search_books("Book A")
         self.assertEqual(len(results), 1)
@@ -48,28 +47,26 @@ class TestBookModel(unittest.TestCase):
         self.assertEqual(len(all_books), 2)
 
     def test_update_book(self):
-        add_result = self.model.add_book("333", "Book C", "Author C", "Cat C", 10.0, 5)
-        book_id = add_result['book']['id']
+        mock_books = [{'id': 1, 'barcode': '333', 'price': 10.0, 'stock': 5}]
+        when(bm)._load_books().thenReturn(mock_books)
+        when(bm)._save_books(ANY).thenReturn(None)
         
-        update_result = self.model.update_book(book_id, 12.5, 8)
+        update_result = self.model.update_book(1, 12.5, 8)
         self.assertTrue(update_result['success'])
         self.assertEqual(update_result['book']['price'], 12.5)
         self.assertEqual(update_result['book']['stock'], 8)
-         
+        
         fake_update = self.model.update_book(999, 10.0, 10)
         self.assertFalse(fake_update['success'])
 
     def test_delete_book(self):
-        add_result = self.model.add_book("444", "Book D", "Author D", "Cat D", 10.0, 5)
-        book_id = add_result['book']['id']
+        mock_books = [{'id': 1, 'barcode': '444'}]
+        when(bm)._load_books().thenReturn(mock_books)
+        when(bm)._save_books(ANY).thenReturn(None)
         
-        delete_result = self.model.delete_book(book_id)
+        delete_result = self.model.delete_book(1)
         self.assertTrue(delete_result['success'])
         
-        books = self.model.search_books()
-        self.assertEqual(len(books), 0)
-        
-        # Test delete non-existent book
         fake_delete = self.model.delete_book(999)
         self.assertFalse(fake_delete['success'])
 

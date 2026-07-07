@@ -1,63 +1,63 @@
 import unittest
-import sys
-from unittest.mock import patch, MagicMock
-
-sys.modules['supabase'] = MagicMock()
-
+from mockito import when, mock, unstub, ANY, verify
+import models.staff_model as sm
 from models.staff_model import StaffModel
 
 class TestStaffModel(unittest.TestCase):
 
-    @patch('models.staff_model.supabase')
-    def test_check_username_exists(self, mock_supabase):
-        mock_response = MagicMock()
+    def tearDown(self):
+        unstub()
+
+    def test_check_username_exists(self):
+        mock_response = mock()
         mock_response.data = [{'id': 1}]
         
-        mock_table = MagicMock()
-        mock_select = MagicMock()
-        mock_eq = MagicMock()
+        mock_table = mock()
+        mock_select = mock()
+        mock_eq = mock()
         
-        mock_supabase.table.return_value = mock_table
-        mock_table.select.return_value = mock_select
-        mock_select.eq.return_value = mock_eq
-        mock_eq.execute.return_value = mock_response
+        when(sm.supabase).table('users').thenReturn(mock_table)
+        when(mock_table).select('id').thenReturn(mock_select)
+        when(mock_select).eq('username', 'testuser').thenReturn(mock_eq)
+        when(mock_eq).execute().thenReturn(mock_response)
         
         result = StaffModel.check_username_exists("testuser")
         self.assertTrue(result)
         
-        mock_response.data = []
+        mock_response_empty = mock()
+        mock_response_empty.data = []
+        mock_eq_empty = mock()
+        when(mock_select).eq('username', 'unknown').thenReturn(mock_eq_empty)
+        when(mock_eq_empty).execute().thenReturn(mock_response_empty)
+        
         result2 = StaffModel.check_username_exists("unknown")
         self.assertFalse(result2)
 
-    @patch('models.staff_model.supabase')
-    def test_hire_staff(self, mock_supabase):
-        mock_table = MagicMock()
-        mock_insert = MagicMock()
+    def test_hire_staff(self):
+        mock_table = mock()
+        mock_insert = mock()
         
-        mock_supabase.table.return_value = mock_table
-        mock_table.insert.return_value = mock_insert
+        when(sm.supabase).table('users').thenReturn(mock_table)
+        when(mock_table).insert(ANY).thenReturn(mock_insert)
+        when(mock_insert).execute().thenReturn(None)
         
         result = StaffModel.hire_staff("new_staff", "password123")
         self.assertTrue(result)
-        mock_supabase.table.assert_called_with("users")
-        mock_insert.execute.assert_called_once()
+        verify(mock_insert).execute()
 
-    @patch('models.staff_model.supabase')
-    def test_fire_staff(self, mock_supabase):
-        mock_table = MagicMock()
-        mock_update = MagicMock()
-        mock_eq = MagicMock()
+    def test_fire_staff(self):
+        mock_table = mock()
+        mock_update = mock()
+        mock_eq = mock()
         
-        mock_supabase.table.return_value = mock_table
-        mock_table.update.return_value = mock_update
-        mock_update.eq.return_value = mock_eq
+        when(sm.supabase).table('users').thenReturn(mock_table)
+        when(mock_table).update({"is_active": False}).thenReturn(mock_update)
+        when(mock_update).eq("username", "old_staff").thenReturn(mock_eq)
+        when(mock_eq).execute().thenReturn(None)
         
         result = StaffModel.fire_staff("old_staff")
         self.assertTrue(result)
-        mock_supabase.table.assert_called_with("users")
-        mock_table.update.assert_called_with({"is_active": False})
-        mock_update.eq.assert_called_with("username", "old_staff")
-        mock_eq.execute.assert_called_once()
+        verify(mock_eq).execute()
 
 if __name__ == '__main__':
     unittest.main()
