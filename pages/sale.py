@@ -2,6 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
 
 SUPABASE_URL = "https://fhewndsaybrqvkmmfzir.supabase.co/"
@@ -152,9 +153,15 @@ class SellerPage:
     def complete_sale(self):
         if not self.cart_items: return
         try:
-            for item in self.cart_items:
-                new_stock = int(item.get("stock", 1)) - 1
-                supabase.table("books").update({"stock": new_stock}).eq("id", item.get("id")).execute()
+            from collections import Counter
+            book_counts = Counter([item.get("id") for item in self.cart_items])
+            
+            for book_id, qty in book_counts.items():
+                res = supabase.table("books").select("stock").eq("id", book_id).execute()
+                if res.data:
+                    current_stock = int(res.data[0].get("stock", 0))
+                    new_stock = max(0, current_stock - qty)
+                    supabase.table("books").update({"stock": new_stock}).eq("id", book_id).execute()
             
             sale_response = supabase.table("sales").insert({"total_amount": self.total_price}).execute()
             new_sale_id = sale_response.data[0]["id"]
@@ -172,6 +179,7 @@ class SellerPage:
             self.cart_listbox.delete(0, tk.END)
             self.total_price = 0.0
             self.total_label.config(text="Σύνολο: 0.00 €")
+            self.perform_search()
         except Exception as e:
             messagebox.showerror("Σφάλμα", f"Η πώληση απέτυχε:\n{e}")
 
@@ -198,6 +206,7 @@ class SellerPage:
             supabase.table("books").update({"stock": new_stock}).eq("id", book.get("id")).execute()
             messagebox.showinfo("Επιτυχία", "Η επιστροφή καταγράφηκε και το απόθεμα αυξήθηκε.")
             self.return_entry.delete(0, tk.END)
+            self.perform_search()
         except Exception as e:
             messagebox.showerror("Σφάλμα", f"Πρόβλημα σύνδεσης:\n{e}")
 

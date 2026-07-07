@@ -1,6 +1,7 @@
 # models/staff_model.py
 
 # IMPORTS
+# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
 
 SUPABASE_URL = "https://fhewndsaybrqvkmmfzir.supabase.co/"
@@ -37,10 +38,10 @@ class StaffModel:
 
     @staticmethod
     def fire_staff(username: str) -> bool:
-        """Απενεργοποιεί τον λογαριασμό αλλάζοντας το is_active σε False."""
+        """Διαγράφει οριστικά τον λογαριασμό του υπαλλήλου."""
         try:
-            supabase.table("users").update({"is_active": False}).eq("username", username).execute()
+            supabase.table("users").delete().eq("username", username).execute()
             return True
         except Exception as e:
-            print(f"Σφάλμα απενεργοποίησης υπαλλήλου: {e}")
+            print(f"Σφάλμα διαγραφής υπαλλήλου: {e}")
             return False

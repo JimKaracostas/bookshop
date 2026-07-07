@@ -2,6 +2,7 @@
 
 import tkinter as tk
 from tkinter import messagebox
+# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
 
 from pages.login import LoginView
@@ -161,8 +162,11 @@ class MainController:
     def inventory_update(self, book_id, price, stock):
         try:
             data = {"price": float(price), "stock": int(stock)}
-            self.supabase.table("books").update(data).eq("id", book_id).execute()
-            messagebox.showinfo("Επιτυχία", "Ενημερώθηκε επιτυχώς.")
+            response = self.supabase.table("books").update(data).eq("id", book_id).execute()
+            if not response.data:
+                messagebox.showwarning("Προσοχή", "Το βιβλίο δεν βρέθηκε ή δεν ενημερώθηκε.")
+            else:
+                messagebox.showinfo("Επιτυχία", "Ενημερώθηκε επιτυχώς.")
             self.load_inventory()
         except Exception as e:
             messagebox.showerror("Σφάλμα", f"Αποτυχία ενημέρωσης:\n{e}")
@@ -205,8 +209,11 @@ class MainController:
 
     def staff_fire(self, username):
         try:
-            self.supabase.table("users").update({"is_active": False}).eq("username", username).execute()
-            messagebox.showinfo("Επιτυχία", f"Ο λογαριασμός '{username}' απενεργοποιήθηκε.")
+            response = self.supabase.table("users").delete().eq("username", username).execute()
+            if not response.data:
+                messagebox.showwarning("Προσοχή", f"Δεν βρέθηκε χρήστης με username '{username}'.")
+            else:
+                messagebox.showinfo("Επιτυχία", f"Ο λογαριασμός '{username}' διαγράφηκε οριστικά.")
             self.load_staff()
         except Exception as e:
-            messagebox.showerror("Σφάλμα", f"Αποτυχία:\n{e}")
+            messagebox.showerror("Σφάλμα", f"Αποτυχία διαγραφής (πιθανώς ο χρήστης έχει πωλήσεις):\n{e}")
