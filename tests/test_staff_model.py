@@ -47,12 +47,12 @@ class TestStaffModel(unittest.TestCase):
 
     def test_fire_staff(self):
         mock_table = mock()
-        mock_update = mock()
+        mock_delete = mock()
         mock_eq = mock()
         
         when(sm.supabase).table('users').thenReturn(mock_table)
-        when(mock_table).update({"is_active": False}).thenReturn(mock_update)
-        when(mock_update).eq("username", "old_staff").thenReturn(mock_eq)
+        when(mock_table).delete().thenReturn(mock_delete)
+        when(mock_delete).eq("username", "old_staff").thenReturn(mock_eq)
         when(mock_eq).execute().thenReturn(None)
         
         result = StaffModel.fire_staff("old_staff")
