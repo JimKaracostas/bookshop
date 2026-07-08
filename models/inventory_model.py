@@ -1,7 +1,6 @@
 # models/inventory_model.py
 
 # IMPORTS
-# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
 
 SUPABASE_URL = "https://fhewndsaybrqvkmmfzir.supabase.co/"

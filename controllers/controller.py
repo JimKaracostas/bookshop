@@ -2,7 +2,6 @@
 
 import tkinter as tk
 from tkinter import messagebox
-# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
 
 from pages.login import LoginView
@@ -10,7 +9,7 @@ from pages.inventory import InventoryManagementPage
 from pages.staff_management import StaffManagementPage
 from pages.sale import SellerPage
 
-# Προσπαθούμε να κάνουμε import το AdminPage (το οποίο τώρα είναι κενό)
+# Προσπαθούμε να κάνουμε import το AdminPage
 try:
     from pages.admin_page import AdminPage
 except ImportError:
@@ -73,7 +72,6 @@ class MainController:
                     self.login_view.show_error("Ο λογαριασμός σας έχει απενεργοποιηθεί.")
                     return
 
-                # Έλεγχος αν ο ρόλος ταιριάζει με την επιλογή
                 db_role = str(user.get("role", "")).upper()
                 mapped_role = "Πωλητής" if db_role in ["SELLER", "ΠΩΛΗΤΗΣ"] else "Διαχειριστής"
                 
@@ -113,14 +111,12 @@ class MainController:
     def show_admin_dashboard(self):
         self.clear_window()
         
-        # Ετοιμάζουμε τα callbacks που θα περάσουμε στο AdminPage όταν το φτιάξεις
         callbacks = {
             'logout': self.handle_logout,
             'show_inventory': self.show_inventory,
             'show_staff': self.show_staff
         }
 
-        # Αν έχεις υλοποιήσει την κλάση AdminPage, τη φορτώνουμε. Αλλιώς βγάζουμε μήνυμα.
         if AdminPage:
             try:
                 self.admin_view = AdminPage(self.root, self.current_user, callbacks)

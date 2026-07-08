@@ -44,7 +44,7 @@ class StaffManagementPage:
     def hire_staff(self):
         username = self.emp_username_entry.get().strip()
         password = self.emp_password_entry.get().strip()
-        role = "SELLER" # Default ρόλος για νέες προσλήψεις από το GUI
+        role = "SELLER"
         
         if not username or not password:
             messagebox.showwarning("Προσοχή", "Το Username και ο Κωδικός είναι υποχρεωτικά!")

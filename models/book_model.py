@@ -1,9 +1,6 @@
-# models/book_model.py
-"""Simple local BookModel with JSON-backed storage.
+#models/book_model.py
 
-Provides: search_books, add_book, update_book, delete_book.
-This replaces external Book Pass logic for offline usage.
-"""
+# IMPORTS
 import json
 import os
 from typing import List, Dict, Optional
@@ -49,10 +46,8 @@ class BookModel:
             found = [b for b in books if str(b.get('barcode','')).lower() == term_lower]
             if found:
                 return found
-            # fallback: maybe user typed title instead of barcode
             found_title = [b for b in books if term_lower in str(b.get('title','')).lower()]
             return found_title
-        # search by id, title, author, category
         result = []
         for b in books:
             if term_lower in str(b.get('title','')).lower() or term_lower in str(b.get('author','')).lower() or term_lower in str(b.get('category','')).lower() or term_lower == str(b.get('id','')):
@@ -62,7 +57,6 @@ class BookModel:
     def add_book(self, barcode: str, title: str, author: str, category: str, price: float, stock: int) -> Dict:
         try:
             books = _load_books()
-            # prevent duplicate barcode
             for b in books:
                 if b.get('barcode') and b['barcode'] == barcode:
                     return {"success": False, "message": "Duplicate barcode"}
